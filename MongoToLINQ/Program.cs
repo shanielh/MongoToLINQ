@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using Newtonsoft.Json.Linq;
 
 namespace CodeSharp.MongoToLINQ
@@ -11,15 +13,14 @@ namespace CodeSharp.MongoToLINQ
         {
             var users = new List<User>()
             {
-                new User() {Id = 1, Age = 20, Status = 'o', UserId = 1, Asset = new Asset() { Id = 20}},
-                new User() {Id = 2, Age = 50, Status = 'o', UserId = 2, Asset = new Asset() { Id = 1}},
+                new User() {Id = 1, Age = 20, Status = 'o', UserId = 1, Asset = new Asset() { Id = 20, Rules = Enumerable.Range(10,10).Select(i => new Rule() { Id = i}).ToArray()}},
+                new User() {Id = 2, Age = 50, Status = 'o', UserId = 2, Asset = new Asset() { Id = 1, Rules = Enumerable.Range(5,10).Select(i => new Rule() { Id = i}).ToArray()}},
                 new User() {Id = 55, Age = 10, Status = 'A', UserId = 2, Asset = new Asset() { Id = 3}},
                 new User() {Id = 2, Age = 110, Status = 'A', UserId = 2},
                 new User() {Id = 2, Age = 70, Status = 'A', UserId = 2, Asset = new Asset() { Id = 100}}
             }.AsQueryable();
 
-
-            var json = Queries.Not;
+            var json = Queries.ElemMatch;
             var token = JToken.Parse(json);
 
             IQueryParser<User> parser = new QueryParser<User>();
@@ -59,5 +60,12 @@ namespace CodeSharp.MongoToLINQ
 
         public int Id { get; set; }
 
+        public Rule[] Rules { get; set; }
+
+    }
+
+    public class Rule
+    {
+        public int Id { get; set; }
     }
 }

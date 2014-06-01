@@ -59,6 +59,19 @@ namespace CodeSharp.MongoToLINQ
                     return new InNode<T>(_argument, path, array);
                 }
 
+                if (property.Name == "$elemMatch")
+                {
+                    var parser =
+                        typeof (QueryParser<>).MakeGenericType(path.Type.GetElementType()).GetConstructor(Type.EmptyTypes).Invoke(null);
+
+                    var parsedElement = parser.GetType()
+                        .GetMethod("ParseWhere")
+                        .Invoke(parser, new object[] {property.Value}) as Expression;
+
+
+                    return new ElementMatchNode<T>(_argument, path, parsedElement);
+                }
+
                 if (property.Name == "$nin")
                 {
                     var array = (JArray)property.Value;
@@ -90,6 +103,27 @@ namespace CodeSharp.MongoToLINQ
             }
 
             return new EqualQueryNode<T>(_argument, left, ((JValue)property.Value).Value);
+        }
+    }
+
+    internal class ElementMatchNode<T> : IQueryNode<T>
+    {
+        private readonly Expression<Func<T, bool>> _expression;
+
+        public ElementMatchNode(ParameterExpression argument, Expression path, Expression innerExpression)
+        {
+            var method =
+                typeof (Enumerable).GetMethods()
+                    .Single(mi => mi.Name == "Any" && mi.GetParameters().Length == 2)
+                    .MakeGenericMethod(path.Type.GetElementType());
+
+            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(System.Linq.Expressions.Expression.Call(method, path, innerExpression), argument);
+        }
+
+
+        public Expression<Func<T, bool>> Expression
+        {
+            get { return _expression; }
         }
     }
 }

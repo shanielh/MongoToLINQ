@@ -61,6 +61,15 @@ namespace CodeSharp.MongoToLINQ {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to { Asset : { Rules : { &quot;$elemMatch&quot; : { Id : { $gte : 19 } } } } }.
+        /// </summary>
+        internal static string ElemMatch {
+            get {
+                return ResourceManager.GetString("ElemMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to { Age : { $gt :30, $lt : 100 }}.
         /// </summary>
         internal static string GreaterThan {
