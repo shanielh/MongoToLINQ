@@ -19,7 +19,7 @@ namespace CodeSharp.MongoToLINQ
             }.AsQueryable();
 
 
-            var json = Queries.In;
+            var json = Queries.Not;
             var token = JToken.Parse(json);
 
             IQueryParser<User> parser = new QueryParser<User>();

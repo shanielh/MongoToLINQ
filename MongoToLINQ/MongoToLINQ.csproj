@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{AAD0ECAC-FF4E-4189-BBFD-8D5E12D9E1A9}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CodeSharp.MongoToLINQ</RootNamespace>
     <AssemblyName>CodeSharp.MongoToLINQ</AssemblyName>
@@ -54,6 +54,8 @@
     <Compile Include="Nodes\InNode.cs" />
     <Compile Include="IQueryNode.cs" />
     <Compile Include="IQueryParser.cs" />
+    <Compile Include="Nodes\NorNode.cs" />
+    <Compile Include="Nodes\NotNode.cs" />
     <Compile Include="Nodes\OrNode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

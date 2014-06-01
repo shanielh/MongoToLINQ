@@ -88,6 +88,15 @@ namespace CodeSharp.MongoToLINQ {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to { $not : { Age : 20 } }.
+        /// </summary>
+        internal static string Not {
+            get {
+                return ResourceManager.GetString("Not", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to { Asset : null }.
         /// </summary>
         internal static string Null {

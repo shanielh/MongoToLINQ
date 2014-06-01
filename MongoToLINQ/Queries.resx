@@ -126,6 +126,9 @@
   <data name="InnerProperty" xml:space="preserve">
     <value>{ Asset : { $or : [ { id :{$gt : 30}}, {id :{$lt : 5}}] } }</value>
   </data>
+  <data name="Not" xml:space="preserve">
+    <value>{ $not : { Age : 20 } }</value>
+  </data>
   <data name="Null" xml:space="preserve">
     <value>{ Asset : null }</value>
   </data>

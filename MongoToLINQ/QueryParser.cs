@@ -38,8 +38,18 @@ namespace CodeSharp.MongoToLINQ
                 if (property.Name == "$or")
                 {
                     var array = (JArray)property.Value;
-
                     return new OrNode<T>(_argument, array.Values<JObject>().Select(o => Parse(path, o)).ToList());
+                }
+
+                if (property.Name == "$nor")
+                {
+                    var array = (JArray)property.Value;
+                    return new NorNode<T>(_argument, array.Values<JObject>().Select(o => Parse(path, o)).ToList());
+                }
+
+                if (property.Name == "$not")
+                {
+                    return new NotNode<T>(_argument, Parse(path, (JObject) property.Value));
                 }
 
                 if (property.Name == "$in")
@@ -47,6 +57,13 @@ namespace CodeSharp.MongoToLINQ
                     var array = (JArray)property.Value;
 
                     return new InNode<T>(_argument, path, array);
+                }
+
+                if (property.Name == "$nin")
+                {
+                    var array = (JArray)property.Value;
+
+                    return new NotNode<T>(_argument, new InNode<T>(_argument, path, array));
                 }
 
                 if (BinaryNodeHelper.Arguments.ContainsKey(property.Name))
