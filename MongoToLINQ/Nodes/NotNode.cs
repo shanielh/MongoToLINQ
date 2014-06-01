@@ -9,10 +9,10 @@ namespace CodeSharp.MongoToLINQ.Nodes
 
         public NotNode(ParameterExpression argument, IQueryNode<T> child)
         {
-            _expression = Expression.Lambda<Func<T, bool>>(Expression.Not(child.GetExpression.Body), argument);
+            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(System.Linq.Expressions.Expression.Not(child.Expression.Body), argument);
         }
 
-        public Expression<Func<T, bool>> GetExpression
+        public Expression<Func<T, bool>> Expression
         {
             get { return _expression; }
         }

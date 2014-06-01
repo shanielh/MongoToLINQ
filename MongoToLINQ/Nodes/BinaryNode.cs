@@ -15,11 +15,11 @@ namespace CodeSharp.MongoToLINQ.Nodes
 
             var expressionType = BinaryNodeHelper.Arguments[property.Name];
 
-            _expression = Expression.Lambda<Func<T, bool>>(
-                Expression.MakeBinary(expressionType, left, Expression.Constant(convertedValue)), argument);
+            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(
+                System.Linq.Expressions.Expression.MakeBinary(expressionType, left, System.Linq.Expressions.Expression.Constant(convertedValue)), argument);
         }
 
-        public Expression<Func<T, bool>> GetExpression
+        public Expression<Func<T, bool>> Expression
         {
             get
             {

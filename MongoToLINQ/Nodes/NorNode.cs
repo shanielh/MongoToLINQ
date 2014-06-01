@@ -10,18 +10,18 @@ namespace CodeSharp.MongoToLINQ.Nodes
 
         public NorNode(ParameterExpression argument, IEnumerable<IQueryNode<T>> innerNodes)
         {
-            Expression expression = Expression.Constant(true);
+            Expression expression = System.Linq.Expressions.Expression.Constant(true);
 
             foreach (var node in innerNodes)
             {
-                expression = Expression.MakeBinary(ExpressionType.AndAlso, expression,
-                    Expression.Negate(node.GetExpression.Body));
+                expression = System.Linq.Expressions.Expression.MakeBinary(ExpressionType.AndAlso, expression,
+                    System.Linq.Expressions.Expression.Negate(node.Expression.Body));
             }
 
-            _expression = Expression.Lambda<Func<T, bool>>(expression, argument);
+            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(expression, argument);
         }
 
-        public Expression<Func<T, bool>> GetExpression
+        public Expression<Func<T, bool>> Expression
         {
             get { return _expression; }
         }

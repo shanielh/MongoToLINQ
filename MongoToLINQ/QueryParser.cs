@@ -20,7 +20,7 @@ namespace CodeSharp.MongoToLINQ
         {
             var queryObject = (JObject)query;
 
-            return Parse(_argument, queryObject).GetExpression;
+            return Parse(_argument, queryObject).Expression;
 
         }
 

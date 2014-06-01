@@ -15,8 +15,8 @@ namespace CodeSharp.MongoToLINQ.Nodes
 
             var method = typeof(Enumerable).GetMethods().Single(mi => mi.Name == "Contains" && mi.GetParameters().Length == 2).MakeGenericMethod(path.Type);
 
-            _expression = Expression.Lambda<Func<T, bool>>(
-                Expression.Call(method, Expression.Constant(objects), path), argument);
+            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(
+                System.Linq.Expressions.Expression.Call(method, System.Linq.Expressions.Expression.Constant(objects), path), argument);
         }
 
         private Array ConvertArray(JArray array, Type type)
@@ -32,7 +32,7 @@ namespace CodeSharp.MongoToLINQ.Nodes
             return retVal;
         }
 
-        public Expression<Func<T, bool>> GetExpression
+        public Expression<Func<T, bool>> Expression
         {
             get
             {

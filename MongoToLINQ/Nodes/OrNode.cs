@@ -10,17 +10,17 @@ namespace CodeSharp.MongoToLINQ.Nodes
 
         public OrNode(ParameterExpression argument, IEnumerable<IQueryNode<T>> innerNodes)
         {
-            Expression expression = Expression.Constant(false);
+            Expression expression = System.Linq.Expressions.Expression.Constant(false);
 
             foreach (var node in innerNodes)
             {
-                expression = Expression.OrElse(expression, node.GetExpression.Body);
+                expression = System.Linq.Expressions.Expression.OrElse(expression, node.Expression.Body);
             }
 
-            _expression = Expression.Lambda<Func<T, bool>>(expression, argument);
+            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(expression, argument);
         }
 
-        public Expression<Func<T, bool>> GetExpression
+        public Expression<Func<T, bool>> Expression
         {
             get
             {

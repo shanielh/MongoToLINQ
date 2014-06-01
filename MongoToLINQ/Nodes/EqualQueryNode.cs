@@ -11,11 +11,11 @@ namespace CodeSharp.MongoToLINQ.Nodes
         {
             var convertedValue = QueryNodeHelper.ConvertValue(path, value);
 
-            _expression = Expression.Lambda<Func<T, bool>>(
-                Expression.Equal(path, Expression.Constant(convertedValue)), argument);
+            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(
+                System.Linq.Expressions.Expression.Equal(path, System.Linq.Expressions.Expression.Constant(convertedValue)), argument);
         }
 
-        public Expression<Func<T, bool>> GetExpression
+        public Expression<Func<T, bool>> Expression
         {
             get
             {
