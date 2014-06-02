@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using CodeSharp.MongoToLINQ.Nodes;
@@ -32,7 +33,7 @@ namespace CodeSharp.MongoToLINQ
 
         private IQueryNode<T> CreateNode(Expression path, JProperty property)
         {
-            if (property.Name[0] == '$')
+            if (property.Name[0] == '$' && property.Name != "$size")
             {
                 // Special functions.
                 if (property.Name == "$or")
@@ -49,7 +50,7 @@ namespace CodeSharp.MongoToLINQ
 
                 if (property.Name == "$not")
                 {
-                    return new NotNode<T>(_argument, Parse(path, (JObject) property.Value));
+                    return new NotNode<T>(_argument, Parse(path, (JObject)property.Value));
                 }
 
                 if (property.Name == "$in")
@@ -62,11 +63,11 @@ namespace CodeSharp.MongoToLINQ
                 if (property.Name == "$elemMatch")
                 {
                     var parser =
-                        typeof (QueryParser<>).MakeGenericType(path.Type.GetElementType()).GetConstructor(Type.EmptyTypes).Invoke(null);
+                        typeof(QueryParser<>).MakeGenericType(GetEnumerableType(path)).GetConstructor(Type.EmptyTypes).Invoke(null);
 
                     var parsedElement = parser.GetType()
                         .GetMethod("ParseWhere")
-                        .Invoke(parser, new object[] {property.Value}) as Expression;
+                        .Invoke(parser, new object[] { property.Value }) as Expression;
 
 
                     return new ElementMatchNode<T>(_argument, path, parsedElement);
@@ -87,7 +88,9 @@ namespace CodeSharp.MongoToLINQ
                 throw new NotSupportedException();
             }
 
-            var left = Expression.Property(path, property.Name);
+            Expression left = property.Name == "$size" ? 
+                SizeNode<T>.GetExpression(_argument, path) : 
+                Expression.Property(path, property.Name);
 
             if (property.HasValues && property.Value is JObject)
             {
@@ -104,26 +107,25 @@ namespace CodeSharp.MongoToLINQ
 
             return new EqualQueryNode<T>(_argument, left, ((JValue)property.Value).Value);
         }
+
+        internal static Type GetEnumerableType(Expression path)
+        {
+            return path.Type.GetInterfaces().Single(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)).GetGenericArguments()[0];
+        }
     }
 
-    internal class ElementMatchNode<T> : IQueryNode<T>
+    internal static class SizeNode<T>
     {
-        private readonly Expression<Func<T, bool>> _expression;
-
-        public ElementMatchNode(ParameterExpression argument, Expression path, Expression innerExpression)
+        
+        public static Expression GetExpression(ParameterExpression argument, Expression path)
         {
             var method =
                 typeof (Enumerable).GetMethods()
-                    .Single(mi => mi.Name == "Any" && mi.GetParameters().Length == 2)
-                    .MakeGenericMethod(path.Type.GetElementType());
+                    .Single(mi => mi.Name == "Count" && mi.GetParameters().Length == 1)
+                    .MakeGenericMethod(QueryParser<T>.GetEnumerableType(path));
 
-            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(System.Linq.Expressions.Expression.Call(method, path, innerExpression), argument);
+            return Expression.Call(method, path);
         }
 
-
-        public Expression<Func<T, bool>> Expression
-        {
-            get { return _expression; }
-        }
     }
 }

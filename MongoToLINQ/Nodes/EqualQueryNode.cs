@@ -7,7 +7,7 @@ namespace CodeSharp.MongoToLINQ.Nodes
     {
         private readonly Expression<Func<T, bool>> _expression;
 
-        public EqualQueryNode(ParameterExpression argument, MemberExpression path, object value)
+        public EqualQueryNode(ParameterExpression argument, Expression path, object value)
         {
             var convertedValue = QueryNodeHelper.ConvertValue(path, value);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace CodeSharp.MongoToLINQ.Nodes
@@ -11,12 +12,8 @@ namespace CodeSharp.MongoToLINQ.Nodes
 
         public AndNode(ParameterExpression argument, IEnumerable<IQueryNode<T>> innerNodes)
         {
-            Expression expression = System.Linq.Expressions.Expression.Constant(true);
-
-            foreach (var node in innerNodes)
-            {
-                expression = System.Linq.Expressions.Expression.AndAlso(expression, node.Expression.Body);
-            }
+            var expression = innerNodes.Select(n => n.Expression.Body)
+                .Aggregate(System.Linq.Expressions.Expression.AndAlso);
 
             _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(expression, argument);
         }

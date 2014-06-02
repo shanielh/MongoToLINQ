@@ -132,5 +132,14 @@ namespace CodeSharp.MongoToLINQ {
                 return ResourceManager.GetString("Simple", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to { Asset : { Rules : { $size : { $gt : 0 } } } }.
+        /// </summary>
+        internal static string Size {
+            get {
+                return ResourceManager.GetString("Size", resourceCulture);
+            }
+        }
     }
 }

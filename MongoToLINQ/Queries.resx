@@ -119,7 +119,6 @@
   </resheader>
   <data name="ElemMatch" xml:space="preserve">
     <value>{ Asset : { Rules : { "$elemMatch" : { Id : { $gte : 19 } } } } }</value>
-    <comment> </comment>
   </data>
   <data name="GreaterThan" xml:space="preserve">
     <value>{ Age : { $gt :30, $lt : 100 }}</value>
@@ -142,5 +141,8 @@
   </data>
   <data name="Simple" xml:space="preserve">
     <value>{ Age : 20 }</value>
+  </data>
+  <data name="Size" xml:space="preserve">
+    <value>{ Asset : { Rules : { $size : { $gt : 0 } } } }</value>
   </data>
 </root>

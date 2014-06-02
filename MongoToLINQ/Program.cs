@@ -20,7 +20,7 @@ namespace CodeSharp.MongoToLINQ
                 new User() {Id = 2, Age = 70, Status = 'A', UserId = 2, Asset = new Asset() { Id = 100}}
             }.AsQueryable();
 
-            var json = Queries.ElemMatch;
+            var json = Queries.Size;
             var token = JToken.Parse(json);
 
             IQueryParser<User> parser = new QueryParser<User>();
