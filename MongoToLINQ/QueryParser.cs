@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using CodeSharp.MongoToLINQ.Nodes;
@@ -8,30 +7,30 @@ using Newtonsoft.Json.Linq;
 
 namespace CodeSharp.MongoToLINQ
 {
-    public class QueryParser<T> : IQueryParser<T>
+    public class QueryParser : IQueryParser
     {
         private readonly ParameterExpression _argument;
 
-        public QueryParser()
+        public QueryParser(Type argumentType)
         {
-            _argument = Expression.Parameter(typeof(T));
+            _argument = Expression.Parameter(argumentType);
         }
 
-        public Expression<Func<T, bool>> ParseWhere(JToken query)
+        public Expression ParseWhere(JToken query)
         {
             var queryObject = (JObject)query;
+            var delegateType = typeof (Func<,>).MakeGenericType(_argument.Type, typeof (bool));
+            var result = Parse(_argument, queryObject).Result;
 
-            return Parse(_argument, queryObject).Expression;
-
+            return Expression.Lambda(delegateType, result, _argument);
         }
 
-        private IQueryNode<T> Parse(Expression path, JObject query)
+        private IQueryNode Parse(Expression path, JObject query)
         {
-            return new AndNode<T>(_argument,
-                query.OfType<JProperty>().Select(property => CreateNode(path, property)).ToList());
+            return new AndNode(query.OfType<JProperty>().Select(property => CreateNode(path, property)).ToList());
         }
 
-        private IQueryNode<T> CreateNode(Expression path, JProperty property)
+        private IQueryNode CreateNode(Expression path, JProperty property)
         {
             if (property.Name[0] == '$' && property.Name != "$size")
             {
@@ -39,73 +38,72 @@ namespace CodeSharp.MongoToLINQ
                 if (property.Name == "$or")
                 {
                     var array = (JArray)property.Value;
-                    return new OrNode<T>(_argument, array.Values<JObject>().Select(o => Parse(path, o)).ToList());
+                    return new OrNode(array.Values<JObject>().Select(o => Parse(path, o)).ToList());
                 }
 
                 if (property.Name == "$nor")
                 {
                     var array = (JArray)property.Value;
-                    return new NorNode<T>(_argument, array.Values<JObject>().Select(o => Parse(path, o)).ToList());
+                    return new NorNode(array.Values<JObject>().Select(o => Parse(path, o)).ToList());
                 }
 
                 if (property.Name == "$not")
                 {
-                    return new NotNode<T>(_argument, Parse(path, (JObject)property.Value));
+                    return new NotNode(Parse(path, (JObject)property.Value));
                 }
 
                 if (property.Name == "$in")
                 {
                     var array = (JArray)property.Value;
 
-                    return new InNode<T>(_argument, path, array);
+                    return new InNode(path, array);
                 }
 
                 if (property.Name == "$elemMatch")
                 {
-                    var parser =
-                        typeof(QueryParser<>).MakeGenericType(GetEnumerableType(path)).GetConstructor(Type.EmptyTypes).Invoke(null);
+                    var parser = new QueryParser(GetEnumerableType(path));
 
                     var parsedElement = parser.GetType()
                         .GetMethod("ParseWhere")
                         .Invoke(parser, new object[] { property.Value }) as Expression;
 
-
-                    return new ElementMatchNode<T>(_argument, path, parsedElement);
+                    return new ElementMatchNode(path, parsedElement);
                 }
 
                 if (property.Name == "$nin")
                 {
                     var array = (JArray)property.Value;
 
-                    return new NotNode<T>(_argument, new InNode<T>(_argument, path, array));
+                    return new NotNode(new InNode(path, array));
                 }
 
-                if (BinaryNodeHelper.Arguments.ContainsKey(property.Name))
+                if (BinaryNode.Arguments.ContainsKey(property.Name))
                 {
-                    return new BinaryNode<T>(_argument, path, property);
+                    return new BinaryNode(path, property);
                 }
 
-                throw new NotSupportedException();
+                throw new NotSupportedException(string.Format("{0} Does not support parsing element type {1}", GetType(),
+                    property.Name));
             }
 
-            Expression left = property.Name == "$size" ? 
-                SizeNode<T>.GetExpression(_argument, path) : 
+            Expression left = property.Name == "$size" ?
+                SizeNode.GetExpression(_argument, path) :
                 Expression.Property(path, property.Name);
 
             if (property.HasValues && property.Value is JObject)
             {
                 // Composite object
-                IEnumerable<IQueryNode<T>> innerNodes = property.Values<JObject>().Select(o => Parse(left, o));
+                IEnumerable<IQueryNode> innerNodes = property.Values<JObject>().Select(o => Parse(left, o));
                 if (left.Type.IsClass)
                 {
                     // Check nullability.
-                    var extraNode = new BinaryNode<T>(_argument, left, new JProperty("$ne", null));
+                    var extraNode = new BinaryNode(left, new JProperty("$ne", null));
                     innerNodes = new[] { extraNode }.Concat(innerNodes);
                 }
-                return new AndNode<T>(_argument, innerNodes.ToList());
+                return new AndNode(innerNodes.ToList());
             }
 
-            return new EqualQueryNode<T>(_argument, left, ((JValue)property.Value).Value);
+            return new EqualQueryNode(left, ((JValue)property.Value).Value);
         }
 
         internal static Type GetEnumerableType(Expression path)
@@ -114,7 +112,23 @@ namespace CodeSharp.MongoToLINQ
         }
     }
 
-    internal static class SizeNode<T>
+    public class QueryParser<T> : IQueryParser<T>
+    {
+        private readonly IQueryParser _parser;
+
+        public QueryParser()
+        {
+            _parser = new QueryParser(typeof (T));
+        }
+
+        public Expression<Func<T, bool>> ParseWhere(JToken query)
+        {
+            return (Expression<Func<T, bool>>) _parser.ParseWhere(query);
+        }
+
+    }
+
+    internal static class SizeNode
     {
         
         public static Expression GetExpression(ParameterExpression argument, Expression path)
@@ -122,7 +136,7 @@ namespace CodeSharp.MongoToLINQ
             var method =
                 typeof (Enumerable).GetMethods()
                     .Single(mi => mi.Name == "Count" && mi.GetParameters().Length == 1)
-                    .MakeGenericMethod(QueryParser<T>.GetEnumerableType(path));
+                    .MakeGenericMethod(QueryParser.GetEnumerableType(path));
 
             return Expression.Call(method, path);
         }

@@ -5,18 +5,17 @@ using Newtonsoft.Json.Linq;
 
 namespace CodeSharp.MongoToLINQ.Nodes
 {
-    internal class InNode<T> : IQueryNode<T>
+    internal class InNode : IQueryNode
     {
-        private readonly Expression<Func<T, bool>> _expression;
+        private readonly MethodCallExpression _expression;
 
-        public InNode(ParameterExpression argument, Expression path, JArray array)
+        public InNode(Expression path, JArray array)
         {
             Array objects = ConvertArray(array, path.Type);
 
             var method = typeof(Enumerable).GetMethods().Single(mi => mi.Name == "Contains" && mi.GetParameters().Length == 2).MakeGenericMethod(path.Type);
 
-            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(
-                System.Linq.Expressions.Expression.Call(method, System.Linq.Expressions.Expression.Constant(objects), path), argument);
+            _expression = Expression.Call(method, Expression.Constant(objects), path);
         }
 
         private Array ConvertArray(JArray array, Type type)
@@ -32,7 +31,7 @@ namespace CodeSharp.MongoToLINQ.Nodes
             return retVal;
         }
 
-        public Expression<Func<T, bool>> Expression
+        public Expression Result
         {
             get
             {

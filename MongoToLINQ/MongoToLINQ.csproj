@@ -49,7 +49,6 @@
   <ItemGroup>
     <Compile Include="Nodes\AndNode.cs" />
     <Compile Include="Nodes\BinaryNode.cs" />
-    <Compile Include="Nodes\BinaryNodeHelper.cs" />
     <Compile Include="Nodes\ElementMatchNode.cs" />
     <Compile Include="Nodes\EqualQueryNode.cs" />
     <Compile Include="Nodes\InNode.cs" />

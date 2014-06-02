@@ -6,8 +6,12 @@ namespace CodeSharp.MongoToLINQ
 {
     public interface IQueryParser<T>
     {
-
         Expression<Func<T, bool>> ParseWhere(JToken query);
 
+    }
+
+    public interface IQueryParser
+    {
+        Expression ParseWhere(JToken query);
     }
 }

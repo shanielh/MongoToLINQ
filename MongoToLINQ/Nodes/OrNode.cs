@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace CodeSharp.MongoToLINQ.Nodes
 {
-    internal class OrNode<T> : IQueryNode<T>
+    internal class OrNode : IQueryNode
     {
-        private readonly Expression<Func<T, bool>> _expression;
+        private readonly Expression _expression;
 
-        public OrNode(ParameterExpression argument, IEnumerable<IQueryNode<T>> innerNodes)
+        public OrNode(IEnumerable<IQueryNode> innerNodes)
         {
-            Expression expression =
-                innerNodes.Select(n => n.Expression.Body)
-                    .Aggregate(System.Linq.Expressions.Expression.OrElse);
-
-            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(expression, argument);
+            _expression =
+                innerNodes.Select(n => n.Result)
+                    .Aggregate(Expression.OrElse);
         }
 
-        public Expression<Func<T, bool>> Expression
+        public Expression Result
         {
             get
             {

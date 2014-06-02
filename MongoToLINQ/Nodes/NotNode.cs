@@ -1,18 +1,17 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace CodeSharp.MongoToLINQ.Nodes
 {
-    class NotNode<T> : IQueryNode<T>
+    class NotNode : IQueryNode
     {
-        private readonly Expression<Func<T, bool>> _expression;
+        private readonly UnaryExpression _expression;
 
-        public NotNode(ParameterExpression argument, IQueryNode<T> child)
+        public NotNode(IQueryNode child)
         {
-            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(System.Linq.Expressions.Expression.Not(child.Expression.Body), argument);
+            _expression = Expression.Not(child.Result);
         }
 
-        public Expression<Func<T, bool>> Expression
+        public Expression Result
         {
             get { return _expression; }
         }

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace CodeSharp.MongoToLINQ
 {
-    public interface IQueryNode<T>
+    public interface IQueryNode
     {
 
-        Expression<Func<T, bool>> Expression
+        Expression Result
         {
             get;
         }

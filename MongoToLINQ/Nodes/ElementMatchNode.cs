@@ -1,25 +1,24 @@
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace CodeSharp.MongoToLINQ.Nodes
 {
-    internal class ElementMatchNode<T> : IQueryNode<T>
+    internal class ElementMatchNode : IQueryNode
     {
-        private readonly Expression<Func<T, bool>> _expression;
+        private readonly MethodCallExpression _expression;
 
-        public ElementMatchNode(ParameterExpression argument, Expression path, Expression innerExpression)
+        public ElementMatchNode(Expression path, Expression innerExpression)
         {
             var method =
                 typeof (Enumerable).GetMethods()
                     .Single(mi => mi.Name == "Any" && mi.GetParameters().Length == 2)
-                    .MakeGenericMethod(QueryParser<T>.GetEnumerableType(path));
+                    .MakeGenericMethod(QueryParser.GetEnumerableType(path));
 
-            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(System.Linq.Expressions.Expression.Call(method, path, innerExpression), argument);
+            _expression = Expression.Call(method, path, innerExpression);
         }
 
 
-        public Expression<Func<T, bool>> Expression
+        public Expression Result
         {
             get { return _expression; }
         }

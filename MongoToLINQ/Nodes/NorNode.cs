@@ -1,27 +1,24 @@
-using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace CodeSharp.MongoToLINQ.Nodes
 {
-    internal class NorNode<T> : IQueryNode<T>
+    internal class NorNode : IQueryNode
     {
-        private readonly Expression<Func<T, bool>> _expression;
+        private readonly Expression _expression;
 
-        public NorNode(ParameterExpression argument, IEnumerable<IQueryNode<T>> innerNodes)
+        public NorNode(IEnumerable<IQueryNode> innerNodes)
         {
-            Expression expression = System.Linq.Expressions.Expression.Constant(true);
+            _expression = Expression.Constant(true);
 
             foreach (var node in innerNodes)
             {
-                expression = System.Linq.Expressions.Expression.MakeBinary(ExpressionType.AndAlso, expression,
-                    System.Linq.Expressions.Expression.Negate(node.Expression.Body));
+                _expression = Expression.MakeBinary(ExpressionType.AndAlso, _expression,
+                    Expression.Negate(node.Result));
             }
-
-            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(expression, argument);
         }
 
-        public Expression<Func<T, bool>> Expression
+        public Expression Result
         {
             get { return _expression; }
         }

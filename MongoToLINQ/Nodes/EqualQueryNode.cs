@@ -1,21 +1,20 @@
-using System;
 using System.Linq.Expressions;
 
 namespace CodeSharp.MongoToLINQ.Nodes
 {
-    internal class EqualQueryNode<T> : IQueryNode<T>
+    internal class EqualQueryNode : IQueryNode
     {
-        private readonly Expression<Func<T, bool>> _expression;
+        private readonly BinaryExpression _expression;
 
-        public EqualQueryNode(ParameterExpression argument, Expression path, object value)
+        public EqualQueryNode(Expression path, object value)
         {
             var convertedValue = QueryNodeHelper.ConvertValue(path, value);
 
-            _expression = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(
-                System.Linq.Expressions.Expression.Equal(path, System.Linq.Expressions.Expression.Constant(convertedValue)), argument);
+            _expression = 
+                Expression.Equal(path, Expression.Constant(convertedValue));
         }
 
-        public Expression<Func<T, bool>> Expression
+        public Expression Result
         {
             get
             {
