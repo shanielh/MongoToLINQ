@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ElemMatch" xml:space="preserve">
-    <value>{ Asset : { Rules : { "$elemMatch" : { Id : { $gte : 19 } } } } }</value>
+    <value>{ asset : { rules : { "$elemMatch" : { id : { $gte : 19 } } } } }</value>
   </data>
   <data name="GreaterThan" xml:space="preserve">
     <value>{ Age : { $gt :30, $lt : 100 }}</value>

@@ -9,10 +9,12 @@ namespace CodeSharp.MongoToLINQ
 {
     public class QueryParser : IQueryParser
     {
+        private readonly ITypeDescriptorFactory _typeDescriptorFactory;
         private readonly ParameterExpression _argument;
 
-        public QueryParser(Type argumentType)
+        public QueryParser(Type argumentType, ITypeDescriptorFactory typeDescriptorFactory)
         {
+            _typeDescriptorFactory = typeDescriptorFactory;
             _argument = Expression.Parameter(argumentType);
         }
 
@@ -27,7 +29,7 @@ namespace CodeSharp.MongoToLINQ
 
         private IQueryNode Parse(Expression path, JObject query)
         {
-            return new AndNode(query.OfType<JProperty>().Select(property => CreateNode(path, property)).ToList());
+            return new AndNode(query.OfType<JProperty>().Select(property => CreateNode(path, property)));
         }
 
         private IQueryNode CreateNode(Expression path, JProperty property)
@@ -38,13 +40,13 @@ namespace CodeSharp.MongoToLINQ
                 if (property.Name == "$or")
                 {
                     var array = (JArray)property.Value;
-                    return new OrNode(array.Values<JObject>().Select(o => Parse(path, o)).ToList());
+                    return new OrNode(array.Values<JObject>().Select(o => Parse(path, o)));
                 }
 
                 if (property.Name == "$nor")
                 {
                     var array = (JArray)property.Value;
-                    return new NorNode(array.Values<JObject>().Select(o => Parse(path, o)).ToList());
+                    return new NorNode(array.Values<JObject>().Select(o => Parse(path, o)));
                 }
 
                 if (property.Name == "$not")
@@ -61,7 +63,7 @@ namespace CodeSharp.MongoToLINQ
 
                 if (property.Name == "$elemMatch")
                 {
-                    var parser = new QueryParser(GetEnumerableType(path));
+                    var parser = new QueryParser(GetEnumerableType(path), _typeDescriptorFactory);
 
                     var parsedElement = parser.GetType()
                         .GetMethod("ParseWhere")
@@ -86,9 +88,9 @@ namespace CodeSharp.MongoToLINQ
                     property.Name));
             }
 
-            Expression left = property.Name == "$size" ?
-                SizeNode.GetExpression(_argument, path) :
-                Expression.Property(path, property.Name);
+            Expression left = property.Name == "$size"
+                ? SizeNode.GetExpression(_argument, path)
+                : _typeDescriptorFactory.Create(path.Type).GetStateProperty(property.Name).CreateGetExpression(path);
 
             if (property.HasValues && property.Value is JObject)
             {
@@ -100,7 +102,7 @@ namespace CodeSharp.MongoToLINQ
                     var extraNode = new BinaryNode(left, new JProperty("$ne", null));
                     innerNodes = new[] { extraNode }.Concat(innerNodes);
                 }
-                return new AndNode(innerNodes.ToList());
+                return new AndNode(innerNodes);
             }
 
             return new EqualQueryNode(left, ((JValue)property.Value).Value);
@@ -108,7 +110,10 @@ namespace CodeSharp.MongoToLINQ
 
         internal static Type GetEnumerableType(Expression path)
         {
-            return path.Type.GetInterfaces().Single(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>)).GetGenericArguments()[0];
+            return
+                path.Type.GetInterfaces()
+                    .Single(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof (IEnumerable<>))
+                    .GetGenericArguments()[0];
         }
     }
 
@@ -116,9 +121,9 @@ namespace CodeSharp.MongoToLINQ
     {
         private readonly IQueryParser _parser;
 
-        public QueryParser()
+        public QueryParser(ITypeDescriptorFactory typeDescriptor)
         {
-            _parser = new QueryParser(typeof (T));
+            _parser = new QueryParser(typeof (T), typeDescriptor);
         }
 
         public Expression<Func<T, bool>> ParseWhere(JToken query)

@@ -18,10 +18,10 @@ namespace CodeSharp.MongoToLINQ
                 new User() {Id = 2, Age = 70, Status = 'A', UserId = 2, Asset = new Asset() { Id = 100}}
             }.AsQueryable();
 
-            var json = Queries.Size;
+            var json = Queries.ElemMatch;
             var token = JToken.Parse(json);
 
-            IQueryParser<User> parser = new QueryParser<User>();
+            IQueryParser<User> parser = new QueryParser<User>(new AnonymousTypeDescriptorFactory(t => new TrivialPropertyTypeDescriptor(t, CamelCaseNamingConvention.Default)));
             var whereExpression = parser.ParseWhere(token);
 
             foreach (var user in users.Where(whereExpression))

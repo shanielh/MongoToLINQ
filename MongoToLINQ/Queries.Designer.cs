@@ -9,6 +9,9 @@
 //------------------------------------------------------------------------------
 
 namespace CodeSharp.MongoToLINQ {
+    using System;
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -58,7 +61,7 @@ namespace CodeSharp.MongoToLINQ {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to { Asset : { Rules : { &quot;$elemMatch&quot; : { Id : { $gte : 19 } } } } }.
+        ///   Looks up a localized string similar to { asset : { rules : { &quot;$elemMatch&quot; : { id : { $gte : 19 } } } } }.
         /// </summary>
         internal static string ElemMatch {
             get {

@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ITypeDescriptor.cs" />
     <Compile Include="Nodes\AndNode.cs" />
     <Compile Include="Nodes\BinaryNode.cs" />
     <Compile Include="Nodes\ElementMatchNode.cs" />
